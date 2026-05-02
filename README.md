@@ -83,7 +83,7 @@ metro-simulator/
 ├── index.html
 ├── style.css
 ├── vobc-dmi/
-│   └── index.html             # 与 DMI 界面
+│   └── index.html             # DMI 界面
 ├── js/
 │   ├── main.js                 # 入口：主循环、DOM 事件绑定
 │   ├── config/constants.js     # 标定常量
