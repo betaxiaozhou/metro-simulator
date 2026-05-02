@@ -1,0 +1,61 @@
+/** 列车与司机室运行状态（单列车仿真域） */
+export const train = {
+  pos: 0,
+  vel: 0,
+  acc: 0,
+  lever: 0,
+  direction: "N",
+  keyOn: true,
+  mode: "RM",
+  preMode: "RM",
+
+  atpActive: true,
+  atoReady: false,
+  atoRunning: false,
+  ebActive: false,
+  ebReason: "",
+  /** ATP/停稳自动释放：仅站台侧为 true（与 route 中 platform 一致） */
+  doorAtpLeft: false,
+  doorAtpRight: false,
+  /** 人工「车门允许」：为 true 时两侧均可开门（CM/调车等） */
+  doorManualBoth: false,
+  /** 门模式：MM 手开手关 · AM 自开手关 · AA 自开自关（仅影响 AM/FAM 停站自动化） */
+  doorMode: "AA",
+  /** DMI 5 区「最高驾驶模式」授权上限：RM / CM / AM / FAM（结合 ATP 级别映射为 -C / -I） */
+  maxAuthorizedDrivingMode: "FAM",
+  /** 各侧车门开启（可双侧同时开） */
+  doorLeftOpen: false,
+  doorRightOpen: false,
+  /** 汇总：左/右/双侧/无，由 doors 模块同步 */
+  doorOpenSide: "none",
+  doorClosed: true,
+  /** PSD 全部关闭锁紧的最早时刻 (ms)；门关好后推进，在此之前 HMI 20 区显示未关闭 */
+  psdAllClosedLockedNotBefore: 0,
+  /** 最近一次开门时刻 (epoch ms)，用于 18 区关门提示延时 */
+  doorOpenedAtMs: 0,
+  /** 无允许开门尝试：至此时间前 DMI 17 区持续显示非法打开 (epoch ms) */
+  doorIllegalOpenIndicateUntil: 0,
+  zeroSpeed: true,
+
+  headlight: false,
+  cabinLight: true,
+  salonLight: true,
+  ac: false,
+  wiper: 0,
+  horn: false,
+
+  nextStationIdx: 0,
+  dwelling: false,
+  dwellTimer: 0,
+  holdAtStation: false,
+  skipStation: false,
+  autoDoorReleased: false,
+
+  mrPress: 900,
+  bcPress: 0,
+  trPct: 0,
+  bkPct: 0,
+  _cmdAccLag: 0,
+  /** 牵引变流器等效直流侧电流（A），正值牵引、再生制动为负 */
+  motorCurrentA: 0,
+};
