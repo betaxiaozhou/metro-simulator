@@ -16,8 +16,8 @@
 
 | 区域            | 内容                                                                   |
 | ------------- | -------------------------------------------------------------------- |
-| 信号 HMI（左屏）    | 与仓库 `vobc-hmi` 同源的 **1024×768 国标 DMI**（`vobc-dmi/index.html` iframe，`?embed=1` 隐藏调试面板），由 `postMessage` 与仿真同步 25 区数据 |
-| ATS 信号监视（中屏）  | 线路示意图、6 个站台、信号机、应答器、限速段、列车实时位置、移动授权                                  |
+| 信号 HMI（左屏）    | 使用 **1024×768 国标 DMI**（`vobc-dmi/index.html` iframe，`?embed=1` 隐藏调试面板），由 `postMessage` 与仿真同步 25 区数据 |
+| ATS 信号监视  | 线路示意图、6 个站台、信号机、应答器、限速段、列车实时位置、移动授权                                  |
 | TCMS 列车监视（右屏） | 6 节编组车体状态、牵引/制动力百分比、总风缸/制动缸压力、第三轨受流指示、网压、车门、空调、滚动事件日志                |
 
 ![图 1](images/demo/photo_01.png)
@@ -84,7 +84,7 @@ metro-simulator/
 ├── index.html
 ├── style.css
 ├── vobc-dmi/
-│   └── index.html             # 与 project/vobc-hmi 一致的 DMI（副本）
+│   └── index.html             # DMI 界面
 ├── js/
 │   ├── main.js                 # 入口：主循环、DOM 事件绑定
 │   ├── config/constants.js     # 标定常量
