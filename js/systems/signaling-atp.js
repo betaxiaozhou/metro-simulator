@@ -42,8 +42,6 @@ export function brakingCurveLimitKmh(p, includeStation, decel) {
 
 export function modeMaxKmh() {
   if (train.mode === "RM") return CONST.RM_LIMIT;
-  if (train.mode === "URM") return CONST.URM_LIMIT;
-  if (train.mode === "IS") return 0;
   return 100;
 }
 
@@ -55,6 +53,8 @@ export function calcATPLimit(p, includeStation = true) {
 }
 
 export function calcEBILimit(p) {
+  /** 任一侧车门开启：紧急制动干预限速视为 0 km/h（与 DMI EBI 指示一致） */
+  if (!train.doorClosed) return 0;
   if (p === undefined) p = train.pos;
   p = clamp(p, 0, ROUTE_LEN);
   const path = brakingCurveLimitKmh(p, false, CONST.EB_BRAKE);

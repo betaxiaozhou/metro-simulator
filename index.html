@@ -176,7 +176,7 @@
         type="button"
         class="op-btn big"
         id="btnATO"
-        title="AM/FAM：允许启动时小灯亮；ATO 驾驶中灯熄灭。A/A 满足条件可自动投入"
+        title="AM/FAM：允许启动时小灯闪烁；ATO 驾驶中灯熄灭。A/A 满足条件可自动投入"
       ><i class="led"></i><span>ATO 启动</span></button>
       <button class="op-btn" id="btnModeUp"><i class="led"></i><span>模式升级</span></button>
       <button class="op-btn" id="btnModeDown"><i class="led"></i><span>模式降级</span></button>
@@ -266,7 +266,7 @@
       <li><b>驾驶室钥匙 ZK=OFF</b>：驾驶台与高亮会变暗（表示未占用/休眠）。环境声需点击操作台后以浏览器策略解禁音频。</li>
       <li><b>模式</b>：默认 <b>RM</b>（限制人工，最高 25 km/h）。按「模式升级」依次进入 <b>CM</b>（ATP 防护人工）→ <b>AM</b>（ATO 自动）→ <b>FAM</b>（全自动）。</li>
       <li><b>主控手柄</b>：拖动 / 用 <kbd>W</kbd><kbd>S</kbd>。上为牵引、下为常用制动、最底为快速制动 (EB)。</li>
-      <li><b>ATO 与「允许启动」</b>（AM/FAM）：<b>ATO 启动</b>上的小圆灯仅在<strong>允许启动</strong>（可发车）时常亮；<strong>ATO 驾驶过程中灯熄灭</strong>。<b>M/M、A/M</b> 进站后 ATO 退出，乘降结束且灯再次亮起后须再按按钮；<b>A/A</b> 条件满足时可由系统自动投入。</li>
+      <li><b>ATO 与「允许启动」</b>（AM/FAM）：<b>ATO 启动</b>上的小圆灯仅在<strong>允许启动</strong>（可发车）时<strong>闪烁</strong>；<strong>ATO 驾驶过程中灯熄灭</strong>。<b>M/M、A/M</b> 进站后 ATO 退出，乘降结束且灯再次亮起后须再按按钮；<b>A/A</b> 条件满足时可由系统自动投入。</li>
       <li><b>车门允许</b>：<b>ATP</b> 在 AM/FAM 停准后仅给出当前站 <strong>站台侧</strong>门允许（与线路数据一致），只能开该侧；按下 <b>车门允许</b> 为<strong>人工允许两侧</strong>（CM/调试等），可与 ATP 允许并存。</li>
       <li><b>ATO 模式</b>：输出为牵引/常用制动指令，经车体响应与阻力积分得到位置速度。<strong>停准</strong>后 ATP 按门模式给出站台侧门允许/自动开该侧门。</li>
       <li><b>门模式</b>（右侧下拉，仅 AM/FAM 自动停站时生效）：停准后 ATP 仅<strong>站台侧</strong>门允许；<b>M/M</b> 须司机开该侧；<b>A/M</b> 自动开该侧；<b>A/A</b> 自动开/关该侧并联站离站。</li>
@@ -274,7 +274,7 @@
       <li><b>EB</b>：超速、紧急按钮、车门未关均会触发紧急制动；停稳后归零方可缓解。</li>
     </ol>
     <h3>系统级别 / 模式</h3>
-    <p>RM 限制人工 ≤25 km/h ｜ CM 防护人工（ATP 监督） ｜ AM 自动驾驶 ｜ FAM 全自动 ｜ URM 非限制人工（仅段内） </p>
+    <p>RM 限制人工 ≤25 km/h ｜ CM 防护人工（ATP 监督） ｜ AM 自动驾驶 ｜ FAM 全自动</p>
     <button id="closeHelp">关闭</button>
   </div>
 </div>

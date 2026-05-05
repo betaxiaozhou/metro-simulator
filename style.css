@@ -131,8 +131,6 @@ body.cab-off .ats-below-console{
 #modeValue.CM{color:var(--green)}
 #modeValue.AM{color:var(--cyan)}
 #modeValue.FAM{color:#fff}
-#modeValue.URM{color:#bbb}
-#modeValue.IS{color:#888}
 
 /* 内嵌 vobc-dmi：槽位严格 4:3，iframe 铺满槽位 → 嵌入页按 min 缩放可无裁切占满 */
 #mmi .mmi-dmi-slot{
@@ -406,12 +404,19 @@ body.cab-off .ats-below-console{
 .op-btn span{display:block;margin-top:4px}
 .op-btn.big{padding:18px 6px 12px;font-size:13px;font-weight:800}
 
-/* ATO：仅「允许启动」时点亮 LED；投入驾驶 (.on) 时灯熄灭（不占通用 .on 绿灯） */
+/* ATO：仅「允许启动」时点亮 LED（闪烁）；投入驾驶 (.on) 时灯熄灭（不占通用 .on 绿灯） */
+@keyframes ato-ready-led{
+  0%,42%{background:var(--green);box-shadow:0 0 8px var(--green),inset 0 0 3px rgba(255,255,255,.4);}
+  58%,100%{background:#142820;border-color:#000;box-shadow:inset 0 1px 2px rgba(0,0,0,.65);}
+}
 .op-btn#btnATO.ready .led{
-  background:var(--green);
-  box-shadow:0 0 8px var(--green), inset 0 0 3px rgba(255,255,255,.4);
+  animation:ato-ready-led .85s ease-in-out infinite;
+}
+@media (prefers-reduced-motion:reduce){
+  .op-btn#btnATO.ready .led{animation:none;background:var(--green);box-shadow:0 0 8px var(--green),inset 0 0 3px rgba(255,255,255,.4);}
 }
 #btnATO.on .led{
+  animation:none;
   background:#1a1f25;
   border:1px solid #000;
   box-shadow:inset 0 1px 1px rgba(0,0,0,.6);

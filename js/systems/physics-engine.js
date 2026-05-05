@@ -1,7 +1,6 @@
 /**
  * 列车纵向动力学：加速度由 ATP 监督、ATO 牵引/制动或司机手柄后经车体响应滤波，再扣除阻力后对速度、位置数值积分。
  * 速度带符号（前进为正、后退为负）；「后退 R」为人工限速工况，ATO 仍要求「前进 F」。
- * 对标辅助：仅在 dwelling、零速且欠标时在正向微量收束位置；冲标不后退修正。
  */
 import { CONST } from "../config/constants.js";
 import { ms2kmh, clamp } from "../lib/math.js";
@@ -41,8 +40,13 @@ export function physicsTick(dt) {
   const targetInfo = calcTargetInfo();
 
   const vKmh = ms2kmh(Math.abs(train.vel));
-  if (train.atpActive && train.mode !== "IS") {
-    if (vKmh > ebiLimit + CONST.ATP_OVERSPEED_MARGIN) {
+  if (train.atpActive) {
+    const doorOpenMoving = !train.doorClosed && Math.abs(train.vel) > 0.08;
+    const overspeedDoorsClosed =
+      train.doorClosed && vKmh > ebiLimit + CONST.ATP_OVERSPEED_MARGIN;
+    if (doorOpenMoving) {
+      triggerEB(`车门开启 · EBI 限速 0 km/h · 当前 ${vKmh.toFixed(1)} km/h`);
+    } else if (overspeedDoorsClosed) {
       triggerEB(`超速 ${vKmh.toFixed(0)} > EBI ${ebiLimit.toFixed(0)}+${CONST.ATP_OVERSPEED_MARGIN}`);
     }
   }
@@ -64,13 +68,28 @@ export function physicsTick(dt) {
   if (!train.doorClosed && train.lever > 0) cmdAccRaw = 0;
 
   let cmdAcc;
-  /** 牵引/制动指令经同一车体响应滤波；ATO 不产生额外动力学旁路（位置仅由 v=∫a 推导） */
+  /** 牵引/制动指令经车体响应滤波；站停 dwelling 内同步滞后状态，避免进站大制动惯性把车速「夹」过零造成倒车 */
   if (train.ebActive) {
+    cmdAcc = cmdAccRaw;
+    train._cmdAccLag = cmdAccRaw;
+  } else if (train.dwelling) {
     cmdAcc = cmdAccRaw;
     train._cmdAccLag = cmdAccRaw;
   } else {
     const deepenBrk = cmdAccRaw < train._cmdAccLag - 1e-6;
-    const tau = deepenBrk ? CONST.CMD_ACC_TAU * 0.38 : CONST.CMD_ACC_TAU;
+    let tau = deepenBrk ? CONST.CMD_ACC_TAU * 0.38 : CONST.CMD_ACC_TAU;
+    /** ATO 进站加深制动：加快追随指令，减小「曲线已到而车体制动尚未建起」导致的冲标 */
+    if (
+      train.atoRunning &&
+      (train.mode === "AM" || train.mode === "FAM") &&
+      deepenBrk
+    ) {
+      const apStn = STATIONS[train.nextStationIdx];
+      if (apStn && !train.dwelling) {
+        const dMark = apStn.pos - train.pos;
+        if (dMark > 0 && dMark < CONST.ATO_APPROACH_DIST_M) tau *= 0.62;
+      }
+    }
     const alpha = 1 - Math.exp(-dt / tau);
     train._cmdAccLag += (cmdAccRaw - train._cmdAccLag) * alpha;
     cmdAcc = train._cmdAccLag;
@@ -84,9 +103,13 @@ export function physicsTick(dt) {
   train.vel += acc * dt;
 
   train.pos += train.vel * dt;
+
   train.pos = clamp(train.pos, 0, ROUTE_LEN);
   if (train.pos <= 0 && train.vel < 0) train.vel = 0;
   if (train.pos >= ROUTE_LEN && train.vel > 0) train.vel = 0;
+
+  /** 站台停稳：消除近零残余速度，避免乘降阶段肉眼可见蠕动 */
+  if (train.dwelling && Math.abs(train.vel) < 0.028) train.vel = 0;
 
   if (train.direction === "N" && Math.abs(train.vel) < 0.02) train.vel = 0;
 
@@ -126,6 +149,9 @@ export function physicsTick(dt) {
     train.dwelling = true;
     train.dwellTimer = 0;
     train.autoDoorReleased = false;
+    train.dwellHadDoorOpenDuringStop = false;
+    train.departSuggestEpochMs = Date.now();
+    train.departSuggestAnchorIdx = train.nextStationIdx;
     const errDisp = fmtStopErr(train.pos, nextStn.pos);
     if ((train.mode === "AM" || train.mode === "FAM") && (train.doorMode === "MM" || train.doorMode === "AM")) {
       disengageAto();
@@ -149,30 +175,20 @@ export function physicsTick(dt) {
 
   tryReleaseDoorAllowAligned(nextStn);
 
-  if (
-    train.dwelling &&
-    (train.mode === "AM" || train.mode === "FAM") &&
-    train.zeroSpeed &&
-    nextStn &&
-    train.doorClosed &&
-    !train.ebActive
-  ) {
-    const e = nextStn.pos - train.pos;
-    const tol = CONST.STOP_TOLERANCE;
-    const maxE = CONST.ATO_DWELL_ALIGN_ASSIST_MAX_M;
-    /** 仅欠标正向蠕动；冲标不允许倒车修正 */
-    if (e > tol && e <= maxE) {
-      train.pos += clamp(e * 2.8 * CONST.G_DT, 0, 0.35);
-      train.pos = clamp(train.pos, 0, ROUTE_LEN);
-    }
-  }
-
   if (nextStn && !train.dwelling && train.pos > nextStn.pos + 30 && train.doorClosed) {
     train.nextStationIdx++;
     clearDoorAtpAllows();
     if (train.nextStationIdx < STATIONS.length)
       tcmsLog(`下一站 ${STATIONS[train.nextStationIdx].name}`, "info");
     else tcmsLog("已抵达终点站", "ok");
+  }
+
+  if (train.departSuggestAnchorIdx >= 0) {
+    const ap = STATIONS[train.departSuggestAnchorIdx]?.pos;
+    if (ap !== undefined && train.pos > ap + CONST.DEPART_SUGGEST_CLEAR_PAST_STATION_M) {
+      train.departSuggestAnchorIdx = -1;
+      train.departSuggestEpochMs = 0;
+    }
   }
 
   tryAutoStartAtoAa();

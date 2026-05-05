@@ -6,7 +6,17 @@ import { train } from "./vehicle-state.js";
 import { syncLeverHandlePos } from "../ui/lever-handle.js";
 import { disengageAto } from "./ato-readiness.js";
 
-export const MODE_LIST = ["IS", "RM", "URM", "CM", "AM", "FAM"];
+export const MODE_LIST = ["RM", "CM", "AM", "FAM"];
+
+function normalizeDrivingModeIfNeeded() {
+  if (MODE_LIST.indexOf(train.mode) >= 0) return;
+  train.mode = "RM";
+  const mv = $("modeValue");
+  if (mv) {
+    mv.textContent = "RM";
+    mv.className = "value RM";
+  }
+}
 
 function maxAuthorizedModeIndex() {
   const c = train.maxAuthorizedDrivingMode ?? "FAM";
@@ -52,11 +62,13 @@ export function setMode(m) {
 }
 
 export function modeUp() {
+  normalizeDrivingModeIfNeeded();
   const i = MODE_LIST.indexOf(train.mode);
   if (i < MODE_LIST.length - 1) setMode(MODE_LIST[i + 1]);
 }
 
 export function modeDown() {
+  normalizeDrivingModeIfNeeded();
   const i = MODE_LIST.indexOf(train.mode);
   if (i > 0) setMode(MODE_LIST[i - 1]);
 }

@@ -8,7 +8,20 @@ import { computeAtoRecommendedKmh } from "../systems/ato-controller.js";
 import { lastMmiMsg } from "./messages.js";
 import { $ } from "../lib/dom.js";
 import { platformScreenDoorsOpenForDmi } from "../systems/doors.js";
-import { atoStartPreconditionsMet } from "../systems/ato-readiness.js";
+
+/** DMI 18 区上行箭头：建议发车（晚点预警）；墙钟用 STATION_DWELL_DEPART_HINT_S（≠ A/A 自动关门时刻） */
+function dmiZone18DepartSuggest() {
+  if (!(train.mode === "AM" || train.mode === "FAM")) return false;
+  if (!(train.doorMode === "AM" || train.doorMode === "AA")) return false;
+  if (train.departSuggestAnchorIdx < 0 || !train.departSuggestEpochMs) return false;
+  if (!train.zeroSpeed || train.ebActive || train.holdAtStation) return false;
+  const st = STATIONS[train.departSuggestAnchorIdx];
+  if (!st) return false;
+  if (Math.abs(train.pos - st.pos) > CONST.DEPART_SUGGEST_ANCHOR_RADIUS_M) return false;
+  if (Date.now() - train.departSuggestEpochMs < CONST.STATION_DWELL_DEPART_HINT_S * 1000) return false;
+  if (!train.doorClosed || platformScreenDoorsOpenForDmi()) return false;
+  return true;
+}
 
 /**
  * 19 区 / TCMS 门模式文案。
@@ -69,8 +82,7 @@ export function buildVobcControlMap() {
   let z5 = dmiZone5MaxAuthorizedLabel();
 
   let z13 = train.mode;
-  if (z13 === "IS" || z13 === "URM") z13 = "RM";
-  else if (z13 !== "AM" && z13 !== "CM" && z13 !== "RM" && z13 !== "FAM") z13 = "CM";
+  if (z13 !== "AM" && z13 !== "CM" && z13 !== "RM" && z13 !== "FAM") z13 = "CM";
 
   let z14 = train.atpActive ? "CBTC" : "ITC";
 
@@ -80,7 +92,7 @@ export function buildVobcControlMap() {
 
   let z17 = "1";
   const illegalUntil = train.doorIllegalOpenIndicateUntil ?? 0;
-  if (Date.now() < illegalUntil) z17 = "8";
+  if (Date.now() < illegalUntil && !train.doorClosed) z17 = "8";
   else if (!train.doorClosed) {
     if (train.doorOpenSide === "both") z17 = "7";
     else if (train.doorOpenSide === "left") z17 = "5";
@@ -96,7 +108,7 @@ export function buildVobcControlMap() {
     const sinceOpen =
       train.doorOpenedAtMs > 0 ? Date.now() - train.doorOpenedAtMs : 0;
     if (sinceOpen >= CONST.DMI_Z18_CLOSE_HINT_DELAY_MS) z18 = "close";
-  } else if (atoStartPreconditionsMet()) z18 = "depart";
+  } else if (dmiZone18DepartSuggest()) z18 = "depart";
 
   const z20 = platformScreenDoorsOpenForDmi() ? "psd" : "none";
 

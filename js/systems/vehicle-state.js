@@ -33,7 +33,7 @@ export const train = {
   psdAllClosedLockedNotBefore: 0,
   /** 最近一次开门时刻 (epoch ms)，用于 18 区关门提示延时 */
   doorOpenedAtMs: 0,
-  /** 无允许开门尝试：至此时间前 DMI 17 区持续显示非法打开 (epoch ms) */
+  /** 无允许开门尝试：至此时间前若车门实际开启则 DMI 17 区显示非法打开 (epoch ms) */
   doorIllegalOpenIndicateUntil: 0,
   zeroSpeed: true,
 
@@ -47,6 +47,12 @@ export const train = {
   nextStationIdx: 0,
   dwelling: false,
   dwellTimer: 0,
+  /** AM/FAM：本站是否曾开过门；关门结束站停时需此标志，避免到站瞬间车门关闭误判离站 */
+  dwellHadDoorOpenDuringStop: false,
+  /** DMI 18 区「建议发车」时钟起点 (epoch ms)；与 ATP 许可无关 */
+  departSuggestEpochMs: 0,
+  /** 对应 STATIONS 索引；-1 表示未锚定本站 */
+  departSuggestAnchorIdx: -1,
   holdAtStation: false,
   skipStation: false,
   autoDoorReleased: false,

@@ -6,27 +6,26 @@ export const CONST = {
   ATP_OVERSPEED_MARGIN: 5,
   ATP_WARN_MARGIN: 2,
   RM_LIMIT: 25,
-  URM_LIMIT: 15,
   AM_REC_OFFSET: 5,
   ATO_CRUISE_DEADBAND_KMH: 2,
   ATO_APPROACH_DIST_M: 180,
+  /**
+   * ATO 理想进站曲线所用的制动强度比例（相对 MAX_SERVICE_BRK）。
+   * 实车曲线偏保守；仿真若取满额常用制动且指令又有滤波滞后，易出现「跟不上曲线」冲标，故 envelope 略收紧。
+   */
+  ATO_ENVELOPE_DECEL_SCALE: 0.74,
+  /** 剩余距离 kinematic 制动 min(|a|) = v²/(2d) 的安全放大，消化 CMD_ACC_TAU 建压滞后 */
+  ATO_STOP_KINEMATIC_SAFETY: 1.14,
   /** 对标容差（m），ATO 车门允许阈值 — 约 ±5 cm 量级 */
   STOP_TOLERANCE: 0.05,
-  /** RM/CM/AM/FAM 共性进站判窗 (m)：仅当距停车标较近且已近静止时进入 dwelling；位置由加速度积分得出 */
-  ATO_ARRIVAL_WINDOW_M: 10,
   /**
-   * AM/FAM 停站 dwelling 内、欠标时正向位置收束的最大剩余距离（m）；冲标侧不使用（无倒车修正）。
-   * 须 ≥ 判窗：否则判到后可能出现的欠标（可达窗宽量级）无法收束，界面长期显示数米级误差。
+   * 进入 dwelling（对标停稳）的最大纵向误差 |车头位置 − 停车标|（m）。
+   * 过小且无末端蠕动时会永远无法「到站」；过大则会在距标尚远（实测 ~1.35 m）且低速时被误判到站。
    */
-  ATO_DWELL_ALIGN_ASSIST_MAX_M: 12,
+  ATO_ARRIVAL_WINDOW_M: 0.42,
   CMD_ACC_TAU: 0.32,
-  /** 自动模式进站末段：距标≤此长度内走统一距离-速度+蠕动轨迹。须 < 首站到出库点间距，否则出库即整段蠕动、ATO 起步极慢 */
-  ATO_PRECISION_ZONE_M: 175,
   /** 距标≤此且自动模式时不施加 limCrit 巡航「提前拖死」限速 */
   ATO_SUPPRESS_LIM_CRIT_M: 260,
-  /** 驻车 / 近标蠕动 PD（仅 dwell 内 dockingAcc 使用） */
-  ATO_DOCK_KP: 5.5,
-  ATO_DOCK_KD: 3.8,
   /**
    * ATP 站内常用制动曲线相对停车标的前移 (m)。
    * 过大会在离标尚远时即把允许速度降到 0，ATO/人工都会出现「系统性欠标」约同一数量级；
@@ -35,9 +34,6 @@ export const CONST = {
   ATP_STOP_MARGIN_M: 0.5,
   ATO_STOP_MARGIN_M: 0.35,
   ATO_BLEND_STATION_M: 600,
-  ATO_CREEP_M: 26,
-  /** 进站走廊：从 (CREEP_M+此值) 到 CREEP_M 平滑引入蠕动帽，避免距标≈26m 处 vReq 断崖导致滤波滞后冲标 */
-  ATO_CREEP_BLEND_M: 22,
 
   G_DT: 1 / 30,
 
@@ -48,11 +44,29 @@ export const CONST = {
   PSD_PLATFORM_CLOSE_MS: 2000,
 
   /**
-   * DMI 18 区「可以关门」：开门后须经过的乘降示意时长 (ms)，再显示关门提示。
+   * AM/FAM · A/A：自**进站 dwelling 起算**的仿真停站时间（s），达到后**自动关门**。
+   * 与 DMI「请关门」、与「建议发车」均为**独立**参数，可分别标定。
    */
-  DMI_Z18_CLOSE_HINT_DELAY_MS: 10000,
+  STATION_AA_AUTOCLOSE_DWELL_S: 20,
 
-  /** 无门允许却操作开门时，DMI 17 区「非法打开」(c-z17=8) 保持时长 (ms) */
+  /**
+   * DMI 18 区**建议发车（晚点预警）**上行箭头：自**到站** `departSuggestEpochMs` 起算的墙钟秒数；
+   * 非 ATP 许可，且**不得**与 A/A 自动关门共用同一常量。
+   */
+  STATION_DWELL_DEPART_HINT_S: 24,
+
+  /** DMI 建议发车锚点：列车越过停车标前方此距离 (m) 后清除本站晚点预警时钟 */
+  DEPART_SUGGEST_CLEAR_PAST_STATION_M: 110,
+
+  /** 仍可视为停留在锚点站台附近的最大 |Δ位置| (m)，防止途中误亮建议发车 */
+  DEPART_SUGGEST_ANCHOR_RADIUS_M: 140,
+
+  /**
+   * DMI 18 区「请关门」：自**本次开门** `doorOpenedAtMs` 起算的墙钟 (ms)，到时显示关门提示。
+   */
+  DMI_Z18_CLOSE_HINT_DELAY_MS: 20000,
+
+  /** 无门允许却操作开门时告警窗口；仅车门未全关时 DMI 17 区才显示「非法打开」(c-z17=8) */
   DMI_DOOR_ILLEGAL_INDICATE_MS: 5000,
 
   /** 牵引/电制动电流模型（多台逆变器并联等效为安培，示意量纲） */
