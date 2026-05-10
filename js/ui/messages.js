@@ -9,7 +9,7 @@ let logCount = 0;
 export function tcmsLog(msg, type = "") {
   const el = $("tcmsLog");
   if (!el) return;
-  const d = document.createElement("div");
+  const d = el.ownerDocument.createElement("div");
   if (type) d.className = type;
   const t = new Date().toTimeString().slice(0, 8);
   d.textContent = `[${t}] ${msg}`;

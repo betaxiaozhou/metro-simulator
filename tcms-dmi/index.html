@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>列车监控 TCMS</title>
+  <style>
+    :root{--bg:#03080f;--panel:#0b111b;--line:#182235;--cyan:#4dd6ff;--dim:#6f7e9a;--green:#5af58a;--amber:#ffd85a;--red:#ff5a5a}
+    html,body{margin:0;height:100%;background:var(--bg);font-family:"Segoe UI","Microsoft YaHei",sans-serif;color:#fff}
+    .tcms-pane{height:100%;box-sizing:border-box;padding:8px;border:1px solid #2b313e;border-radius:6px;background:linear-gradient(180deg,#121a25,#0b1018);display:flex;flex-direction:column;gap:8px}
+    .train-cars{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+    .car{height:28px;border:1px solid #3a4459;border-radius:4px;background:#111928;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--cyan);font-size:12px}
+    .tcms-grid{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-height:0}
+    .tcms-cell{border:1px solid #2d384f;border-radius:4px;padding:6px;background:var(--panel)}
+    .tcms-cell .lab{font-size:10px;color:var(--dim);margin-bottom:2px}
+    .tcms-cell .num{font-family:"Menlo",monospace;color:#fff;font-size:14px}
+    .tcms-cell .num b{color:var(--cyan);font-weight:800}
+    .tcms-cell .bar{height:8px;border-radius:999px;overflow:hidden;background:#1e2a40}
+    .tcms-cell .bar span{display:block;height:100%;width:0;background:var(--green)}
+    .tcms-cell .bar span.bk{background:var(--amber)}
+    .tcms-cell .num.motor-i-wrap{font-size:17px;line-height:1.2;padding-top:2px}
+    .tcms-cell .num.motor-i-wrap.regen b{color:var(--green)}
+    .tcms-cell .num.motor-i-wrap.traction b{color:var(--amber)}
+    .tcms-log{height:102px;overflow:auto;padding:6px;background:#07101d;border:1px solid #2d384f;border-radius:4px;font-size:11px;line-height:1.4}
+    .tcms-log .err{color:var(--red)} .tcms-log .ok{color:var(--green)} .tcms-log .info{color:var(--cyan)}
+  </style>
+</head>
+<body>
+  <div class="tcms-pane">
+    <div class="train-cars">
+      <div class="car" data-car="1">Tc1</div><div class="car" data-car="2">M1</div><div class="car" data-car="3">M2</div><div class="car" data-car="4">M3</div><div class="car" data-car="5">M4</div><div class="car" data-car="6">Tc2</div>
+    </div>
+    <div class="tcms-grid">
+      <div class="tcms-cell"><div class="lab">牵引力 %</div><div class="bar"><span id="trBar"></span></div><div class="num"><b id="trPct">0</b>%</div></div>
+      <div class="tcms-cell"><div class="lab">制动力 %</div><div class="bar"><span id="bkBar" class="bk"></span></div><div class="num"><b id="bkPct">0</b>%</div></div>
+      <div class="tcms-cell"><div class="lab">总风缸 MR</div><div class="num"><b id="mrPress">900</b> kPa</div></div>
+      <div class="tcms-cell"><div class="lab">制动缸 BC</div><div class="num"><b id="bcPress">0</b> kPa</div></div>
+      <div class="tcms-cell"><div class="lab">第三轨供电</div><div class="num" id="thirdRailState">集电接通</div></div>
+      <div class="tcms-cell"><div class="lab">网压 DC750 / 直流</div><div class="num"><b id="lineV">750</b> V</div></div>
+      <div class="tcms-cell"><div class="lab">牵引变流器电流（再生为负）</div><div class="num motor-i-wrap neutral" id="motorCurrentWrap"><b id="motorCurrentA">0</b><span> A</span></div></div>
+      <div class="tcms-cell"><div class="lab">车门</div><div class="num" id="doorState">右关</div></div>
+      <div class="tcms-cell"><div class="lab">空调</div><div class="num" id="acState">关</div></div>
+    </div>
+    <div class="tcms-log" id="tcmsLog"><div>[INIT] TCMS MB-TN 启动…</div></div>
+  </div>
+</body>
+</html>

@@ -35,60 +35,9 @@
   <!-- 右：TCMS 列车监控（中车 MB-TN 系列风格） -->
   <div class="screen tcms" id="tcms">
     <div class="screen-title">列车监控 TCMS · MB-TN</div>
-    <div class="tcms-pane">
-      <div class="train-cars">
-      <!-- 6 节编组 Tc-M-M-M-M-Tc -->
-      <div class="car" data-car="1">Tc1</div>
-      <div class="car" data-car="2">M1</div>
-      <div class="car" data-car="3">M2</div>
-      <div class="car" data-car="4">M3</div>
-      <div class="car" data-car="5">M4</div>
-      <div class="car" data-car="6">Tc2</div>
+    <div class="tcms-pane tcms-embed-slot">
+      <iframe class="mmi-vobc mmi-tcms" id="mmi-tcms" title="列车监控系统界面" src="tcms-dmi/index.html?embed=1"></iframe>
     </div>
-    <div class="tcms-grid">
-      <div class="tcms-cell">
-        <div class="lab">牵引力 %</div>
-        <div class="bar"><span id="trBar"></span></div>
-        <div class="num"><b id="trPct">0</b>%</div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">制动力 %</div>
-        <div class="bar"><span id="bkBar" class="bk"></span></div>
-        <div class="num"><b id="bkPct">0</b>%</div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">总风缸 MR</div>
-        <div class="num"><b id="mrPress">900</b> kPa</div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">制动缸 BC</div>
-        <div class="num"><b id="bcPress">0</b> kPa</div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">第三轨供电</div>
-        <div class="num" id="thirdRailState">集电接通</div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">网压 DC750 / 直流</div>
-        <div class="num"><b id="lineV">750</b> V</div>
-      </div>
-      <div class="tcms-cell tcms-motor-i">
-        <div class="lab">牵引变流器电流（再生为负）</div>
-        <div class="num motor-i-wrap neutral" id="motorCurrentWrap"><b id="motorCurrentA">0</b><span class="motor-i-unit"> A</span></div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">车门</div>
-        <div class="num" id="doorState">右关</div>
-      </div>
-      <div class="tcms-cell">
-        <div class="lab">空调</div>
-        <div class="num" id="acState">关</div>
-      </div>
-    </div>
-    <div class="tcms-log" id="tcmsLog">
-      <div>[INIT] TCMS MB-TN 启动…</div>
-    </div>
-    </div><!-- .tcms-pane -->
   </div>
 </section>
 
