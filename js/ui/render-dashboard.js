@@ -5,9 +5,53 @@ import { postVobcDmi, formatDoorModeForDmi } from "./dmi-bridge.js";
 import { updateTrainMarker } from "./track-view.js";
 import { atoStartPreconditionsMet } from "../systems/ato-readiness.js";
 
+let _tcmsPostT = 0;
+
+function postTcmsDmi(ns) {
+  const fr = $("mmi-tcms");
+  if (!fr?.contentWindow) return;
+  const now = performance.now();
+  if (now - _tcmsPostT < 80) return;
+  _tcmsPostT = now;
+
+  const date = new Date();
+  const term = STATIONS[STATIONS.length - 1];
+  const trainIdEl = $("trainId");
+  const trainNo = trainIdEl ? trainIdEl.textContent.replace(/^车次\s*/, "").trim() : "G1107";
+
+  try {
+    fr.contentWindow.postMessage(
+      {
+        type: "metro-tcms-dmi",
+        state: {
+          trainNo,
+          date: date.toISOString().slice(0, 10),
+          time: date.toTimeString().slice(0, 8),
+          nextStation: ns ? ns.name : term.name,
+          terminalStation: term.name,
+          speedKmh: Math.abs(train.vel) * 3.6,
+          lineV: train.keyOn ? 750 : 0,
+          motorCurrentA: train.motorCurrentA,
+          mrPress: train.mrPress,
+          bcPress: train.bcPress,
+          trPct: train.trPct,
+          bkPct: train.bkPct,
+          keyOn: train.keyOn,
+          mode: train.mode,
+          ebActive: train.ebActive,
+          doorOpenSide: train.doorOpenSide,
+          ac: train.ac,
+        },
+      },
+      "*",
+    );
+  } catch (e) {}
+}
+
 export function renderDashboard() {
   const ns = STATIONS[train.nextStationIdx];
   postVobcDmi();
+  postTcmsDmi(ns);
   updateTrainMarker();
 
   const setText = (id, val) => {

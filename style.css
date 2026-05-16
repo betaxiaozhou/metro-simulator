@@ -92,11 +92,10 @@ body.cab-off .ats-below-console{
   box-shadow:inset 0 0 30px rgba(0,40,80,.25), 0 4px 14px rgba(0,0,0,.7);
   min-height:430px;
 }
-/* 右屏整体 4:3；左屏标题 + 下方槽位单独 4:3，保证 iframe 视口与 1024×768 同比例、DMI 可完整 contain */
+/* 左右 DMI 均由标题 + 下方 4:3 槽位组成，iframe 视口与 1024×768 同比例 */
 #tcms.screen{
   align-self:start;
   width:100%;
-  aspect-ratio:4/3;
   min-height:0;
   display:flex;
   flex-direction:column;
@@ -151,20 +150,24 @@ body.cab-off .ats-below-console{
   display:block;
   background:#000;
 }
-#tcms .tcms-pane{
-  flex:1 1 0;
-  min-height:0;
-  overflow:auto;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+#tcms .tcms-embed-slot{
+  position:relative;
+  width:100%;
+  aspect-ratio:4/3;
+  flex:0 0 auto;
+  border-radius:4px;
+  overflow:hidden;
+  background:rgb(0,12,25);
 }
-#tcms .tcms-log{
-  flex:1 1 auto;
-  min-height:64px;
+#tcms .mmi-tcms{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:rgb(0,12,25);
 }
-#tcms .tcms-embed-slot{overflow:hidden;}
-#tcms .mmi-tcms{width:100%;height:100%;border:0;display:block;background:#000;}
 
 .speedo-wrap{
   position:relative;width:100%;aspect-ratio:1;
@@ -286,6 +289,31 @@ body.cab-off .ats-below-console{
 .ti-cell span{display:block;font-size:10px;color:var(--dim)}
 .ti-cell b{display:block;font-size:14px;color:var(--cyan);
   font-family:"Menlo",monospace;margin-top:2px}
+.signal-info-strip{
+  margin-top:8px;
+  height:28px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  background:rgb(0,12,25);
+  border:1px solid #1b3a5b;
+  border-radius:4px;
+  padding:5px 8px;
+  font-family:"Menlo","Consolas",monospace;
+  font-size:12px;
+  line-height:16px;
+  color:#8aa6c2;
+}
+.signal-info-strip div{
+  min-height:16px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.signal-info-strip .err{color:var(--red)}
+.signal-info-strip .ok{color:var(--green)}
+.signal-info-strip .info{color:var(--cyan)}
 
 /* ===== TCMS ===== */
 .train-cars{

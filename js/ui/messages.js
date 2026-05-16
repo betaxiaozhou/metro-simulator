@@ -7,6 +7,16 @@ export let lastMmiMsgLevel = "info";
 let logCount = 0;
 
 export function tcmsLog(msg, type = "") {
+  const fr = $("mmi-tcms");
+  if (fr?.contentWindow) {
+    try {
+      fr.contentWindow.postMessage(
+        { type: "metro-tcms-log", message: msg, level: type || "info" },
+        "*",
+      );
+    } catch (e) {}
+  }
+
   const el = $("tcmsLog");
   if (!el) return;
   const d = el.ownerDocument.createElement("div");
