@@ -31,7 +31,59 @@
       font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;
       user-select:none;
     }
-    body{display:block}
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulator { display: flex; gap: 20px; transform: scale(0.85); transform-origin: center center; }
+
+    /* 控制台样式 */
+    .control-panel {
+        width: 480px; background-color: #222; border-radius: 8px; padding: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+        gap: 10px; border: 1px solid #444; height: 768px; box-sizing: border-box; overflow-y: auto;
+    }
+    .control-panel h2 { margin: 0 0 5px 0; font-size: 18px; border-bottom: 2px solid #555; padding-bottom: 5px; color: #fff;}
+    .ctrl-group { background: #111; padding: 10px; border-radius: 6px; border: 1px solid #333; }
+    .ctrl-group h3 { margin: 0 0 8px 0; font-size: 14px; color: var(--blue); border-bottom: 1px solid #333; padding-bottom: 4px;}
+    .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+    .ctrl-item { display: flex; align-items: center; justify-content: space-between; }
+    .ctrl-item label { font-size: 11px; color: #ccc; width: 65px; flex-shrink: 0; }
+    .ctrl-item input[type="text"], .ctrl-item select { flex: 1; width: 100%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 3px; font-size: 12px;}
+    .slider-row { display: flex; flex-direction: column; margin-bottom: 5px;}
+    .slider-row div { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; color: #ccc;}
+    .slider-row input { width: 100%; cursor: pointer;}
+    button { background: #444; color: white; border: 1px solid #666; padding: 8px; border-radius: 4px; cursor: pointer; }
+
+    /* 嵌入 metro-simulator：仅 DMI，隐藏调试面板 */
+    html.tcms-embed-root, body.tcms-embed {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background-color: rgb(0, 12, 25);
+    }
+    body.tcms-embed {
+        display: block;
+        padding: 0;
+    }
+    body.tcms-embed .simulator {
+        gap: 0;
+        transform: none;
+        transform-origin: top left;
+        width: 100%;
+        min-height: 0;
+    }
+    body.tcms-embed #mock-panel { display: none !important; }
+    body.tcms-embed .tcms {
+        transform-origin: top left;
+    }
+    body.tcms-embed #tcms-embed-wrap {
+        margin: 0 auto;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
     .tcms{
       width:var(--w);
       height:var(--h);
@@ -596,7 +648,8 @@
   </style>
 </head>
 <body>
-  <main class="tcms" aria-label="列车监控 TCMS">
+<div class="simulator">
+  <main class="tcms" aria-label="列车监控 TCMS" id="dmi-main">
     <section class="layout">
       <div class="zone z1 header" data-zone="1">
         <div class="train-id">编组: <span id="trainNo">19005(Tc2)</span></div>
@@ -681,6 +734,88 @@
       </div>
     </section>
   </main>
+
+  <div class="control-panel" id="mock-panel">
+      <h2>TCMS 打桩调试器</h2>
+      <div class="ctrl-group">
+          <h3>基础状态</h3>
+          <div class="slider-row">
+              <div><span>速度: <span id="v-speed">0.0</span> km/h</span></div>
+              <input type="range" id="c-speedKmh" min="0" max="110" step="0.1" value="0">
+          </div>
+          <div class="slider-row">
+              <div><span>网压: <span id="v-lineV">750</span> V</span></div>
+              <input type="range" id="c-lineV" min="0" max="1000" step="1" value="750">
+          </div>
+          <div class="slider-row">
+              <div><span>电流: <span id="v-motorCurrentA">0</span> A</span></div>
+              <input type="range" id="c-motorCurrentA" min="-1000" max="1000" step="1" value="0">
+          </div>
+          <div class="slider-row">
+              <div><span>牵引级位: <span id="v-trPct">0</span> %</span></div>
+              <input type="range" id="c-trPct" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="slider-row">
+              <div><span>制动级位: <span id="v-bkPct">0</span> %</span></div>
+              <input type="range" id="c-bkPct" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="slider-row">
+              <div><span>主风缸压力: <span id="v-mrPress">900</span> kPa</span></div>
+              <input type="range" id="c-mrPress" min="0" max="1200" step="10" value="900">
+          </div>
+          <div class="slider-row">
+              <div><span>制动缸压力: <span id="v-bcPress">0</span> kPa</span></div>
+              <input type="range" id="c-bcPress" min="0" max="600" step="10" value="0">
+          </div>
+      </div>
+      <div class="ctrl-group">
+          <h3>设备状态</h3>
+          <div class="ctrl-grid">
+              <div class="ctrl-item"><label>模式</label>
+                  <select id="c-mode">
+                      <option value="RM" selected>RM</option>
+                      <option value="AM">AM</option>
+                      <option value="CM">CM</option>
+                      <option value="FAM">FAM</option>
+                      <option value="ATB">ATB</option>
+                  </select>
+              </div>
+              <div class="ctrl-item"><label>受流</label><select id="c-keyOn"><option value="true" selected>正常</option><option value="false">断电</option></select></div>
+              <div class="ctrl-item"><label>空调</label><select id="c-ac"><option value="false" selected>关</option><option value="true">开</option></select></div>
+              <div class="ctrl-item"><label>紧急制动</label><select id="c-ebActive"><option value="false" selected>已建立 (正常)</option><option value="true">未建立 (EB)</option></select></div>
+              <div class="ctrl-item" style="grid-column: span 2;"><label>车门状态</label>
+                  <select id="c-doorOpenSide">
+                      <option value="none" selected>全关</option>
+                      <option value="left">左开</option>
+                      <option value="right">右开</option>
+                      <option value="both">双开</option>
+                  </select>
+              </div>
+              <div class="ctrl-item"><label>编组</label><input type="text" id="c-trainNo" value="19005(Tc2)"></div>
+              <div class="ctrl-item"><label>下一站</label><input type="text" id="c-nextStation" value="积水潭"></div>
+              <div class="ctrl-item"><label>终点站</label><input type="text" id="c-terminalStation" value="牡丹园"></div>
+          </div>
+      </div>
+      <div class="ctrl-group">
+          <h3>消息注入</h3>
+          <div class="ctrl-grid">
+              <div class="ctrl-item" style="grid-column: span 2;">
+                  <input type="text" id="c-logMsg" placeholder="输入日志消息...">
+              </div>
+              <div class="ctrl-item">
+                  <select id="c-logLevel">
+                      <option value="info">Info</option>
+                      <option value="ok">OK</option>
+                      <option value="err">Error</option>
+                  </select>
+              </div>
+              <div class="ctrl-item">
+                  <button type="button" id="btn-send-log" style="width:100%">发送日志</button>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
 
   <script>
     const CAR_NAMES = ["Tc1","Mp1","M1","Mp3","M3","M2","Mp2","Tc2"];
@@ -840,18 +975,116 @@
 
     window.addEventListener("message", (event) => {
       const msg = event.data || {};
-      if (msg.type === "metro-tcms-dmi") applyData(msg.state || {});
-      if (msg.type === "metro-tcms-log") appendLog(msg.message, msg.level);
+      if (msg.type === "metro-tcms-log") {
+        appendLog(msg.message, msg.level);
+        return;
+      }
+      if (msg.type !== "metro-tcms-dmi") return;
+      const state = msg.state;
+      if (!state || typeof state !== "object") return;
+      try {
+        for (const [id, val] of Object.entries(state)) {
+          const el = document.getElementById("c-" + id);
+          if (!el || !("value" in el)) continue;
+          el.value = String(val);
+        }
+      } catch (err) { console.warn("metro-tcms-dmi apply", err); }
+      syncMockToTCMS();
+    });
+
+    function syncMockToTCMS() {
+      const data = {
+        speedKmh: parseFloat($("c-speedKmh").value),
+        lineV: parseFloat($("c-lineV").value),
+        motorCurrentA: parseFloat($("c-motorCurrentA").value),
+        trPct: parseFloat($("c-trPct").value),
+        bkPct: parseFloat($("c-bkPct").value),
+        mrPress: parseFloat($("c-mrPress").value),
+        bcPress: parseFloat($("c-bcPress").value),
+        mode: $("c-mode").value,
+        keyOn: $("c-keyOn").value === "true",
+        ac: $("c-ac").value === "true",
+        ebActive: $("c-ebActive").value === "true",
+        doorOpenSide: $("c-doorOpenSide").value,
+        trainNo: $("c-trainNo").value,
+        nextStation: $("c-nextStation").value,
+        terminalStation: $("c-terminalStation").value
+      };
+      
+      $("v-speed").textContent = data.speedKmh.toFixed(1);
+      $("v-lineV").textContent = data.lineV;
+      $("v-motorCurrentA").textContent = data.motorCurrentA;
+      $("v-trPct").textContent = data.trPct;
+      $("v-bkPct").textContent = data.bkPct;
+      $("v-mrPress").textContent = data.mrPress;
+      $("v-bcPress").textContent = data.bcPress;
+
+      applyData(data);
+    }
+
+    $("mock-panel").addEventListener("input", syncMockToTCMS);
+    $("mock-panel").addEventListener("change", syncMockToTCMS);
+
+    $("btn-send-log").addEventListener("click", () => {
+      const msg = $("c-logMsg").value;
+      const level = $("c-logLevel").value;
+      if (msg) {
+        appendLog(msg, level);
+      }
     });
 
     buildCars();
     buildTable();
     applyData({});
-    fitScreen();
-    window.addEventListener("resize", fitScreen);
+    
+    /* metro-simulator 嵌入：由父页面下发状态并刷新 DMI */
+    (function embedMetro() {
+        const p = new URLSearchParams(location.search);
+        if (p.get("embed") === "1") {
+            document.documentElement.classList.add("tcms-embed-root");
+            document.body.classList.add("tcms-embed");
+            const dmi = document.getElementById("dmi-main");
+            const sim = document.querySelector(".simulator");
+            if (dmi && sim && !document.getElementById("tcms-embed-wrap")) {
+                const wrap = document.createElement("div");
+                wrap.id = "tcms-embed-wrap";
+                wrap.style.overflow = "hidden";
+                wrap.style.margin = "0 auto";
+                sim.insertBefore(wrap, dmi);
+                wrap.appendChild(dmi);
+            }
+            const wrap = document.getElementById("tcms-embed-wrap");
+            const DMI_NAT_W = 1024;
+            const DMI_NAT_H = 768;
+            const scale = () => {
+                const iw = window.innerWidth || DMI_NAT_W;
+                const ih = window.innerHeight || DMI_NAT_H;
+                const s = Math.min(iw / DMI_NAT_W, ih / DMI_NAT_H);
+                const inv = 1 - s;
+                if (wrap) {
+                    wrap.style.width = Math.round(DMI_NAT_W * s) + "px";
+                    wrap.style.height = Math.round(DMI_NAT_H * s) + "px";
+                    wrap.style.overflow = "hidden";
+                    wrap.style.marginLeft = "auto";
+                    wrap.style.marginRight = "auto";
+                }
+                if (dmi) {
+                    dmi.style.transform = `scale(${s})`;
+                    dmi.style.transformOrigin = "top left";
+                    dmi.style.marginBottom = "-" + Math.round(DMI_NAT_H * inv) + "px";
+                    dmi.style.marginRight = "-" + Math.round(DMI_NAT_W * inv) + "px";
+                }
+            };
+            scale();
+            window.addEventListener("resize", scale);
+        }
+    })();
+
     setInterval(() => {
       if (!lastData.time) $("timeText").textContent = new Date().toTimeString().slice(0, 8);
     }, 1000);
+
+    syncMockToTCMS();
   </script>
 </body>
 </html>
